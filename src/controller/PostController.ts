@@ -1,3 +1,4 @@
+import { PostBusiness} from './../business/PostBusiness';
 import { Request, Response } from "express";
 import { PostDatabase } from "../database/PostsDataBase";
 import { TPostDB } from "../types";
@@ -9,20 +10,11 @@ export class PostController {
     
   public getPosts = async (req: Request, res: Response) => {
     try {
-      const postDatabase = new PostDatabase();
-      const postsDB: TPostDB[] = await postDatabase.getPosts();
 
-      const posts = postsDB.map((postData) => ({
-        id: postData.id,
-        creator_id: postData.creator_id,
-        content: postData.content,
-        likes: postData.likes,
-        dislikes: postData.dislikes,
-        created_at: postData.created_at,
-        updated_at: postData.updated_at,
-      }));
+      const postBusiness = new PostBusiness()
+      const reponse = await  postBusiness.getPosts()
 
-      res.status(200).send(posts);
+      res.status(200).send(reponse);
     } catch (error) {
       console.log(error);
 
@@ -38,37 +30,26 @@ export class PostController {
     }
   };
 
+
+
   public postPost = async (req: Request, res: Response) => {
     try {
-        const { id, creator_id, content, likes, dislikes } = req.body;
-
-        const postDatabase = new PostDatabase();
-        const userDatabase = new UserDatabase();
-
-        // Verifica se o criador do post (creator_id) existe antes de inserir
-        const userExists = await userDatabase.findUserById(creator_id);
-
-        if (!userExists) {
-            res.status(404).send('Usuário não encontrado');
-            return;
+     
+        const input = {
+          id:req.body.id,
+          creator_id:req.body.creator_id,
+          content: req.body.content,
+          likes: req.body.likes,
+          dislikes: req.body.dislikes
         }
 
-        // Insere o novo post com as datas formatadas corretamente
+        const postBusiness = new PostBusiness()
+        const output = await postBusiness.postPost(input)
 
-        const currentDate = format(new Date(), "yyyy-MM-dd HH:mm:ss");
 
-        // Insere o novo post com as datas formatadas corretamente
-        await postDatabase.insertPost({
-            id,
-            creator_id,
-            content,
-            likes,
-            dislikes,
-            created_at: currentDate,
-            updated_at: currentDate
-        });
 
-        res.status(201).send('Post criado com sucesso!');
+        
+        res.status(201).send(`Post de ${output?.name} criado com sucesso! `);
     } catch (error) {
         console.log(error);
 
@@ -87,22 +68,24 @@ export class PostController {
 
 public putPost = async (req: Request, res: Response) => {
     try {
-        const { id, creator_id, content, likes, dislikes, created_at, updated_at } = req.body;
-        const postDatabase = new PostDatabase();
+        
 
-        const updatedPost: TPostDB = {
-            id,
-            creator_id,
-            content,
-            likes,
-            dislikes,
-            created_at,
-            updated_at
+
+        const input = {
+          id: req.body.id,
+          creator_id: req.body.creator_id,
+          content: req.body.content,
+          likes: req.body.likes,
+          dislikes: req.body.dislikes,
+          created_at: req.body.created_at,
+          updated_at: req.body.updated_at
         };
 
-        await postDatabase.updatePost(updatedPost);
+        const postBusiness = new PostBusiness()
+        const output = await postBusiness.putPost(input)
+        
 
-        res.status(200).send('Post atualizado com sucesso!');
+        res.status(200).send(`Post de ${output?.creator_id} atualizado com sucesso! `);
     } catch (error) {
         console.log(error);
 
@@ -120,21 +103,16 @@ public putPost = async (req: Request, res: Response) => {
 
 public deletePost = async (req: Request, res: Response) => {
     try {
-      const postId = req.params.id;
-
-      // Verificar se o post com o ID existe
-      const postDatabase = new PostDatabase();
-      const postExists = await postDatabase.findPostById(postId);
-
-      if (!postExists) {
-        res.status(404).send('Post não encontrado');
-        return;
+   
+      const input = {
+        postId: req.params.id
       }
 
-      // Remover o post do banco de dados
-      await postDatabase.deletePost(postId);
+      const postBusiness = new PostBusiness()
+      const output = await postBusiness.deletePost(input)
+     
 
-      res.status(200).send('Post excluído com sucesso');
+      res.status(200).send(`Post ${output.id} excluído com sucesso'`);
     } catch (error) {
       console.log(error);
 
