@@ -116,7 +116,7 @@ export class PostBusiness {
 
 
 
-     // Verificar se o post com o ID existe
+     // Verificar se o post com o ID existe aqui
      const postDatabase = new PostDatabase();
      const postExists = await postDatabase.findPostById(postId);
 
